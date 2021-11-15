@@ -33,7 +33,7 @@ for (t in 2:M) {
   
   ## update beta
   Gamma <- diag(gamma.i.s)
-  sig <- solve(t(X) %*% Gamma %*% X)
+  sig <- solve(phi.s[t-1] * t(X) %*% Gamma %*% X)
   mu <- solve(t(X) %*% Gamma %*% X, t(X) %*% Gamma %*% y)
   beta.s[, t] <- rmvnorm(1, mu, sig)
   
@@ -48,4 +48,5 @@ tok <- proc.time()
 cat(paste0("The traning process used ", (tok - tik)[3]), "\n")
 
 ## Visualization
-plot(phi.s[1:t])
+plot(beta.s[1, 1:t], type = 'l')
+plot(beta.s[2, 1:t], type = 'l')
