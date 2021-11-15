@@ -13,6 +13,10 @@ y <- xy[, 2]
 verb <- 10000
 burn.in <- 1000
 
+## set hyper-parameters
+a <- 0.5
+b <- 0.5
+
 ## MCMC process
 M <- 1e5
 beta.s <- matrix(rep(NA, 2 * M), nrow = 2)
@@ -25,11 +29,8 @@ tik <- proc.time()
 for (t in 2:M) {
   
   ## update gamma_i's
-  gamma.i.s <- rep(NA, N)
-  for (i in 1:N) {
-    resid <- y[i] - beta.s[1, t-1] - beta.s[2, t-1]*x[i]
-    gamma.i.s[i] <- rgamma(1, 1/2, 1/2 * phi.s[t-1] * resid^2)
-  }
+  resids <- y - beta.s[1, t-1] - beta.s[2, t-1]*x
+  gamma.i.s <- rgamma(N, a + 0.5, 1/2 * phi.s[t-1] * resids^2 + b)
   
   ## update beta
   Gamma <- diag(gamma.i.s)
@@ -42,6 +43,9 @@ for (t in 2:M) {
   rate <- 1/2 * t(resids) %*% Gamma %*% resids
   phi.s[t] <- rgamma(1, N / 2, rate)
   
+  ## monitor iterating process
+  print(t)
+  if ((verb != 0) && (t %% verb ==0)) print(t)
 }
 
 tok <- proc.time()
