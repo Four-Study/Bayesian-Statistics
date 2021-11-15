@@ -5,45 +5,8 @@ library(mvtnorm)
 rat <- read.table("RatData.txt", row.names = 1)
 colnames(rat) <- seq(1, 5)
 
-########### Gibbs Sampler #############
-# Gibbs.sampler <- function(data = NULL,
-#                           a = 1,
-#                           b = 1,
-#                           eta = c(100, 40),
-#                           Psi = matrix(c(1.1, -0.3, -0.3, 0.1), ncol = 2),
-#                           rho = 30,
-#                           R = matrix(c(1/6, 0.5, 0.5, 11/6), ncol = 2),
-#                           verb = 0,
-#                           burn.in = 1000) {
-#   I <- nrow(data)
-#   ## Initialize hyper-parameters
-#   a <- 1
-#   b <- 1
-#   eta <- c(100, 40)
-#   Psi <- matrix(c(1.1, -0.3, -0.3, 0.1), ncol = 2)
-#   rho <- 30
-#   R <- matrix(c(1/6, 0.5, 0.5, 11/6), ncol = 2)
-#   
-#   ## Initialize iteration 0
-#   theta.init <- eta # modify for extreme case
-#   phi.init <- a / (a + b) # modify for extreme case
-#   Phi.init <- solve(R)
-#   
-#   ## MCMC process
-#   M <- 1e6
-#   theta0s <- rep(NA, M)
-#   phis <- rep(NA, M)
-#   Phis <- list
-#   for (t in seq(1:M)) {
-#     for (i in seq(1:I)) {
-#       
-#     }
-#   }
-# }
-
-data <- rat
+## print iteration number every verb times
 verb <- 10000
-burn.in <- 1000
 
 ## Set hyper-parameters
 a <- 0
@@ -59,8 +22,8 @@ phi.init <- 0.1 # modify for extreme case
 Phi.init <- matrix(c(1, 0, 0, 1), ncol = 2)
 
 ## Pre-process
-I <- nrow(data)
-J <- ncol(data)
+I <- nrow(rat)
+J <- ncol(rat)
 X <- matrix(c(rep(1, J), seq(1:J)), ncol = 2)
 sumX.1 <- t(X) %*% X
 
@@ -79,7 +42,7 @@ for (t in 2:M) {
   ## update theta_i's
   theta.i.s <- matrix(rep(NA, 2 * I), nrow = 2)
   for (i in 1:I) {
-    sumX.2 <- t(as.matrix(data[i, ]) %*% X)
+    sumX.2 <- t(as.matrix(rat[i, ]) %*% X)
     sig <- solve(Phi.s[[t-1]] + phi.s[t-1] * sumX.1)
     mu <- solve(Phi.s[[t-1]] + phi.s[t-1] * sumX.1, 
                 Phi.s[[t-1]] %*% theta0.s[, t-1] + phi.s[t-1] * sumX.2)
@@ -96,7 +59,7 @@ for (t in 2:M) {
   sumX.3 <- 0
   for (k in 1:I) 
     for (j in 1:J) 
-      sumX.3 <- sumX.3 + (data[k, j] - t(X[j, ]) %*% theta.i.s[, i])^2
+      sumX.3 <- sumX.3 + (rat[k, j] - t(X[j, ]) %*% theta.i.s[, i])^2
   sumX.3 <- sumX.3 / 2
   phi.s[t] <- rgamma(1, I*J/2 + a, sumX.3 + b)
   
@@ -114,16 +77,21 @@ tok <- proc.time()
 cat(paste0("The traning process used ", (tok - tik)[3]), "\n")
 
 ## trace plots
+burn.in <- 1000
 plot(theta0.s[1, -(1:burn.in)], type = 'l')
 plot(theta0.s[2, -(1:burn.in)], type = 'l')
 plot(phi.s[-(1:burn.in)], type = 'l')
 
 eigen.values <- matrix(rep(NA, 2 * M), nrow = 2)
-traces <- rep(NA, M)
+traces <- Phi.s1 <- Phi.s2 <- rep(NA, M)
 for (t in 1:M) {
   eigen.values[, t] <- eigen(Phi.s[[t]])$values
   traces[t] <- sum(diag(Phi.s[[t]]))
+  Phi.s1[t] <- Phi.s[[t]][1, 1]
+  Phi.s2[t] <- Phi.s[[t]][2, 2]
 } 
 plot(eigen.values[1, -(1:burn.in)], type = 'l')
 plot(eigen.values[2, -(1:burn.in)], type = 'l')
 plot(traces[-(1:burn.in)], type = 'l')
+plot(Phi.s1[-(1:burn.in)], type = 'l')
+plot(Phi.s2[-(1:burn.in)], type = 'l')
