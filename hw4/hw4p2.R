@@ -44,7 +44,6 @@ for (t in 2:M) {
   phi.s[t] <- rgamma(1, N / 2, rate)
   
   ## monitor iterating process
-  print(t)
   if ((verb != 0) && (t %% verb ==0)) print(t)
 }
 
@@ -52,5 +51,8 @@ tok <- proc.time()
 cat(paste0("The traning process used ", (tok - tik)[3]), "\n")
 
 ## Visualization
-plot(beta.s[1, 1:t], type = 'l')
-plot(beta.s[2, 1:t], type = 'l')
+burn.in <- 100
+plot(beta.s[1, -(1:burn.in)], type = 'l')
+plot(beta.s[2, -(1:burn.in)], type = 'l')
+plot(phi.s[-(1:burn.in)], type = 'l')
+save.image("p2.RData")
