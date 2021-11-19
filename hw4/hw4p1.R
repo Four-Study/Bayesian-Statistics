@@ -72,7 +72,7 @@ for (t in 2:M) {
 
 ## trace plots
 burn.in <- 100
-pdf("theta0.pdf", width = 20, height = 10)
+pdf("imgs/theta0.pdf", width = 20, height = 10)
 par(mfrow = c(2, 2), mar = c(4.1, 5.1, 1.1, 1.1))
 plot(theta0.s[1, -(1:burn.in)], type = 'l', 
      xlab = "Iteration", ylab = "alpha 0", main = "", 
@@ -88,7 +88,7 @@ plot(density(theta0.s[2, -(1:burn.in)]),
      cex.lab = 2, cex.axis = 1.5)
 dev.off()
 
-pdf("phi.pdf", width = 10, height = 5)
+pdf("imgs/phi.pdf", width = 10, height = 5)
 par(mar = c(4.1, 5.1, 1.1, 1.1))
 plot(phi.s[-(1:burn.in)], type = 'l', 
      xlab = "Iteration", ylab = "phi", main = "", 
@@ -104,7 +104,7 @@ for (t in 1:M) {
   Phi.s2[t] <- Phi.s[[t]][2, 2]
 } 
 
-pdf("Phi.pdf", width = 10, height = 10)
+pdf("imgs/Phi.pdf", width = 10, height = 10)
 par(mfrow = c(2, 1), mar = c(4.1, 5.1, 1.1, 1.1))
 plot(eigen.values[1, -(1:burn.in)], type = 'l', 
      xlab = "Iteration", ylab = "1st Eigenvalue", main = "", 

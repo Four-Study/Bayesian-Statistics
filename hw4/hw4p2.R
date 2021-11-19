@@ -48,7 +48,7 @@ for (t in 2:M) {
 
 ## Visualization
 burn.in <- 100
-pdf("betas.pdf", width = 10, height = 12)
+pdf("imgs/betas.pdf", width = 10, height = 12)
 par(mfrow = c(2, 1), mar = c(4.1, 5.1, 2.1, 1.1))
 hist(beta.s[1, -(1:burn.in)],  
      xlab = "", ylab = "beta 0", main = "", 

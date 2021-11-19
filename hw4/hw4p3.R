@@ -18,7 +18,7 @@ dev.off()
 ## shuffle x and draw a scatter plot
 set.seed(202111)
 x.random <- sample(x, length(x))
-pdf("scatter_x.pdf", width = 10, height = 10)
+pdf("imgs/scatter_x.pdf", width = 10, height = 10)
 par(mar = c(4.1, 5.1, 2.1, 1.1))
 plot(x.random, main = "", ylab = "Shuffled x",
      cex.lab = 2, cex.axis = 1.5)
