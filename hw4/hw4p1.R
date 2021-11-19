@@ -11,14 +11,14 @@ verb <- 1000
 ## Set hyper-parameters
 a <- 0
 b <- 0
-eta <- c(100, 40)
+eta <- c(100, 50)
 Psi.inv <- matrix(0, ncol = 2, nrow = 2)
 rho <- 2
 R <- matrix(c(100, 0, 0, 0.1), ncol = 2)
 
 ## Initialize iteration 0
-theta0.init <- eta # modify for extreme case
-phi.init <- 0.1 # modify for extreme case
+theta0.init <- eta 
+phi.init <- 1 
 Phi.init <- matrix(c(1, 0, 0, 1), ncol = 2)
 
 ## Pre-process
@@ -44,15 +44,13 @@ for (t in 2:M) {
   for (i in 1:I) {
     sumX.2 <- t(as.matrix(rat[i, ]) %*% X)
     sig <- solve(Phi.s[[t-1]] + phi.s[t-1] * sumX.1)
-    mu <- solve(Phi.s[[t-1]] + phi.s[t-1] * sumX.1, 
-                Phi.s[[t-1]] %*% theta0.s[, t-1] + phi.s[t-1] * sumX.2)
+    mu <- sig %*% (Phi.s[[t-1]] %*% theta0.s[, t-1] + phi.s[t-1] * sumX.2)
     theta.i.s[, i] <- rmvnorm(1, mean = mu, sigma = sig)
   }
   
   ## update theta_0
   sig <- solve(I * Phi.s[[t-1]] + Psi.inv)
-  mu <- solve(I * Phi.s[[t-1]] + Psi.inv, 
-              Phi.s[[t-1]] %*% rowSums(theta.i.s) + Psi.inv %*% eta)
+  mu <- sig %*% (Phi.s[[t-1]] %*% rowSums(theta.i.s) + Psi.inv %*% eta)
   theta0.s[, t] <- rmvnorm(1, mean = mu, sigma = sig)
   
   ## update phi
@@ -116,9 +114,4 @@ plot(eigen.values[2, -(1:burn.in)], type = 'l',
      cex.lab = 2, cex.axis = 1.5)
 dev.off()
 
-plot(eigen.values[1, -(1:burn.in)], type = 'l')
-plot(eigen.values[2, -(1:burn.in)], type = 'l')
-plot(traces[-(1:burn.in)], type = 'l')
-plot(Phi.s1[-(1:burn.in)], type = 'l')
-plot(Phi.s2[-(1:burn.in)], type = 'l')
 save.image("p1.RData")
