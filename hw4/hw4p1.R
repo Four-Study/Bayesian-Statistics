@@ -8,18 +8,13 @@ colnames(rat) <- seq(1, 5)
 ## print iteration number every verb times
 verb <- 1000
 
-## Set hyper-parameters
+## Set up hyper-parameters
 a <- 0
 b <- 0
 eta <- c(100, 50)
 Psi.inv <- matrix(0, ncol = 2, nrow = 2)
 rho <- 2
 R <- matrix(c(100, 0, 0, 0.1), ncol = 2)
-
-## Initialize iteration 0
-theta0.init <- eta 
-phi.init <- 1 
-Phi.init <- matrix(c(1, 0, 0, 1), ncol = 2)
 
 ## Pre-process
 I <- nrow(rat)
@@ -32,9 +27,11 @@ M <- 1e4
 theta0.s <- matrix(rep(NA, 2 * M), nrow = 2)
 phi.s <- rep(NA, M)
 Phi.s <- vector(mode = "list", length = M)
-theta0.s[, 1] <- theta0.init
-phi.s[1] <- phi.init
-Phi.s[[1]] <- Phi.init
+
+## Initialize iteration 1
+theta0.s[, 1] <- eta
+phi.s[1] <- 1
+Phi.s[[1]] <- matrix(c(1, 0, 0, 1), ncol = 2)
 
 ## start iterations
 for (t in 2:M) {
@@ -55,9 +52,9 @@ for (t in 2:M) {
   
   ## update phi
   sumX.3 <- 0
-  for (k in 1:I) 
+  for (i in 1:I) 
     for (j in 1:J) 
-      sumX.3 <- sumX.3 + (rat[k, j] - t(X[j, ]) %*% theta.i.s[, i])^2
+      sumX.3 <- sumX.3 + (rat[i, j] - t(X[j, ]) %*% theta.i.s[, i])^2
   sumX.3 <- sumX.3 / 2
   phi.s[t] <- rgamma(1, I*J/2 + a, sumX.3 + b)
   
