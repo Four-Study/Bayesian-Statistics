@@ -6,7 +6,7 @@ rat <- read.table("RatData.txt", row.names = 1)
 colnames(rat) <- seq(1, 5)
 
 ## print iteration number every verb times
-verb <- 10000
+verb <- 1000
 
 ## Set hyper-parameters
 a <- 0
@@ -28,7 +28,7 @@ X <- matrix(c(rep(1, J), seq(1:J)), ncol = 2)
 sumX.1 <- t(X) %*% X
 
 ## MCMC process
-M <- 1e5
+M <- 1e4
 theta0.s <- matrix(rep(NA, 2 * M), nrow = 2)
 phi.s <- rep(NA, M)
 Phi.s <- vector(mode = "list", length = M)
@@ -36,7 +36,7 @@ theta0.s[, 1] <- theta0.init
 phi.s[1] <- phi.init
 Phi.s[[1]] <- Phi.init
 
-tik <- proc.time()
+## start iterations
 for (t in 2:M) {
   
   ## update theta_i's
@@ -65,22 +65,37 @@ for (t in 2:M) {
   
   ## update Phi
   sig <- solve((theta.i.s - theta0.s[, t]) %*% 
-                 t(theta.i.s - theta0.s[, t]) 
-               + rho * R)
+                 t(theta.i.s - theta0.s[, t]) + rho * R)
   Phi.s[[t]] <- matrix(rWishart(1, rho + I, sig), ncol = 2)
   
   ## monitor updating process
   if ((verb != 0) && (t %% verb ==0)) print(t)
 }
 
-tok <- proc.time()
-cat(paste0("The traning process used ", (tok - tik)[3]), "\n")
-
 ## trace plots
-burn.in <- 1000
-plot(theta0.s[1, -(1:burn.in)], type = 'l')
-plot(theta0.s[2, -(1:burn.in)], type = 'l')
-plot(phi.s[-(1:burn.in)], type = 'l')
+burn.in <- 100
+pdf("theta0.pdf", width = 20, height = 10)
+par(mfrow = c(2, 2), mar = c(4.1, 5.1, 1.1, 1.1))
+plot(theta0.s[1, -(1:burn.in)], type = 'l', 
+     xlab = "Iteration", ylab = "alpha 0", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+plot(density(theta0.s[1, -(1:burn.in)]), 
+     ylab = "density", xlab = "alpha 0", main = "",
+     cex.lab = 2, cex.axis = 1.5)
+plot(theta0.s[2, -(1:burn.in)], type = 'l', 
+     xlab = "Iteration", ylab = "beta 0", main = "",
+     cex.lab = 2, cex.axis = 1.5)
+plot(density(theta0.s[2, -(1:burn.in)]), 
+     ylab = "density", xlab = "beta 0", main = "",
+     cex.lab = 2, cex.axis = 1.5)
+dev.off()
+
+pdf("phi.pdf", width = 10, height = 5)
+par(mar = c(4.1, 5.1, 1.1, 1.1))
+plot(phi.s[-(1:burn.in)], type = 'l', 
+     xlab = "Iteration", ylab = "phi", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+dev.off()
 
 eigen.values <- matrix(rep(NA, 2 * M), nrow = 2)
 traces <- Phi.s1 <- Phi.s2 <- rep(NA, M)
@@ -90,6 +105,17 @@ for (t in 1:M) {
   Phi.s1[t] <- Phi.s[[t]][1, 1]
   Phi.s2[t] <- Phi.s[[t]][2, 2]
 } 
+
+pdf("Phi.pdf", width = 10, height = 10)
+par(mfrow = c(2, 1), mar = c(4.1, 5.1, 1.1, 1.1))
+plot(eigen.values[1, -(1:burn.in)], type = 'l', 
+     xlab = "Iteration", ylab = "1st Eigenvalue", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+plot(eigen.values[2, -(1:burn.in)], type = 'l', 
+     xlab = "Iteration", ylab = "2nd Eigenvalue", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+dev.off()
+
 plot(eigen.values[1, -(1:burn.in)], type = 'l')
 plot(eigen.values[2, -(1:burn.in)], type = 'l')
 plot(traces[-(1:burn.in)], type = 'l')

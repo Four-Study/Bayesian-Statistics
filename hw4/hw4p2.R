@@ -24,8 +24,7 @@ phi.s <- rep(NA, M)
 beta.s[, 1] <- c(1, 2)
 phi.s[1] <- 1
 
-tik <- proc.time()
-
+## start iterations
 for (t in 2:M) {
   
   ## update gamma_i's
@@ -47,12 +46,16 @@ for (t in 2:M) {
   if ((verb != 0) && (t %% verb ==0)) print(t)
 }
 
-tok <- proc.time()
-cat(paste0("The traning process used ", (tok - tik)[3]), "\n")
-
 ## Visualization
 burn.in <- 100
-plot(beta.s[1, -(1:burn.in)], type = 'l')
-plot(beta.s[2, -(1:burn.in)], type = 'l')
-plot(phi.s[-(1:burn.in)], type = 'l')
+pdf("betas.pdf", width = 10, height = 12)
+par(mfrow = c(2, 1), mar = c(4.1, 5.1, 2.1, 1.1))
+hist(beta.s[1, -(1:burn.in)],  
+     xlab = "", ylab = "beta 0", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+hist(beta.s[2, -(1:burn.in)], 
+     xlab = "", ylab = "beta 1", main = "", 
+     cex.lab = 2, cex.axis = 1.5)
+dev.off()
+
 save.image("p2.RData")
