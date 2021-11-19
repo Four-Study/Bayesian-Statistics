@@ -101,7 +101,7 @@ for (t in 1:M) {
   Phi.s2[t] <- Phi.s[[t]][2, 2]
 } 
 
-pdf("imgs/Phi.pdf", width = 10, height = 10)
+pdf("imgs/Phi_matrix.pdf", width = 10, height = 10)
 par(mfrow = c(2, 1), mar = c(4.1, 5.1, 1.1, 1.1))
 plot(eigen.values[1, -(1:burn.in)], type = 'l', 
      xlab = "Iteration", ylab = "1st Eigenvalue", main = "", 
