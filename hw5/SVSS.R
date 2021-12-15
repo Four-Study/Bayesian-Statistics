@@ -49,4 +49,5 @@ for (i in 1:M) {
   Imat[i, ] <- I
   if ((i %% 100) == 0) cat("loop", i, "\n")
 }
-plot(1:M, cumsum(t(Imat[, 11])) / 1:M, type = "l", ylim = c(0, 1))
+# plot(1:M, cumsum(t(Imat[, 11])) / 1:M, type = "l", ylim = c(0, 1))
+save.image("1.RData")
