@@ -75,7 +75,7 @@ eqn.BIC <- paste("y =", paste(round(coef.BIC[1],3),
   gsub(pattern = "\\.X", replacement = "X")
 print(eqn.BIC)
 
-# SSVS
+# SVSS
 
 # initialization
 p <- ncol(X)

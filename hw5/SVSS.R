@@ -2,52 +2,58 @@
 dat <- read.csv("Model1_5444.txt", skip = 2, header = FALSE)
 colnames(dat) <- c("y", paste0(rep("X", 50), 1:50))
 
-# augment the data set with interactions
-X <- model.matrix(y ~ .^2, dat)
-y <- dat[, 1]
-dat.aug <- data.frame(cbind(y = y, X[, -1]))
-
-# LASSO
-library(glmnet)
-lambda <- exp(seq(-10, 1, 0.1))
-la.fit1 <- glmnet(X, y, alpha = 1, lambda = lambda)
-cv.out <- cv.glmnet(X, y, alpha = 1, lambda = lambda)
-best.lam <- cv.out$lambda.min
-la.coef <- predict(la.fit1,type="coefficients",s=best.lam)
-la.coef[as.numeric(la.coef != 0) == 1]
-init <- which(as.numeric(la.coef != 0) == 1)
-
 # SSVS
 
+SVSS <- function(X, y, M = 10000) {
+  # initialization
+  p <- ncol(X)
+  psi <- 1
+  
+  Imat <- matrix(NA, nrow = M, ncol = p)
+  I <- rep(TRUE, p)
+  # I[init] <- TRUE
+  for (i in 1:M) {
+    for (j in 1:p) {
+      # calculate the numerator and denominator of Bayes factor
+      I.tmp <- I
+      I.tmp[j] <- FALSE
+      X.r <- X[, I.tmp]
+      inv.r <- solve(t(X.r) %*% X.r + 1 / psi^2 * diag(max(ncol(X.r), 1)))
+      log.reduced <- log(psi) + y %*% X.r %*% inv.r %*% t(X.r) %*% y +  
+        log(sqrt(det(inv.r)))
+      I.tmp[j] <- TRUE
+      X.f <- X[, I.tmp]
+      inv.f <- solve(t(X.f) %*% X.f + 1 / psi^2 * diag(ncol(X.f)))
+      log.full <- y %*% X.f %*% inv.f %*% t(X.f) %*% y + log(sqrt(det(inv.f)))
+      
+      # calculate Bayes factor
+      BF <- exp(log.reduced - log.full)
+      prob <- 1 / (1 + 1 / BF)
+      I[j] <- rbinom(1, 1, prob) == 0
+    }
+    Imat[i, ] <- I
+    if ((i %% 1000) == 0) cat("loop", i, "\n")
+  }
+  return(Imat)
+}
+
 # initialization
-p <- ncol(X)
+
+y <- dat[, 1]
+X.o <- cbind(1, as.matrix(dat[, -1]))
+p <- ncol(X.o)
 psi <- 1
 M <- 10000
 
-Imat <- matrix(NA, nrow = M, ncol = p)
-I <- rep(FALSE, p)
-I[init] <- TRUE
-for (i in 1:M) {
-  for (j in 1:p) {
-    # calculate the numerator and denominator of Bayes factor
-    I.tmp <- I
-    I.tmp[j] <- FALSE
-    X.r <- X[, I.tmp]
-    inv.r <- solve(t(X.r) %*% X.r + 1 / psi^2 * diag(max(ncol(X.r), 1)))
-    log.reduced <- log(psi) + y %*% X.r %*% inv.r %*% t(X.r) %*% y +  
-      log(sqrt(det(inv.r)))
-    I.tmp[j] <- TRUE
-    X.f <- X[, I.tmp]
-    inv.f <- solve(t(X.f) %*% X.f + 1 / psi^2 * diag(ncol(X.f)))
-    log.full <- y %*% X.f %*% inv.f %*% t(X.f) %*% y + log(sqrt(det(inv.f)))
-    
-    # calculate Bayes factor
-    BF <- exp(log.reduced - log.full)
-    prob <- 1 / (1 + 1 / BF)
-    I[j] <- rbinom(1, 1, prob) == 0
-  }
-  Imat[i, ] <- I
-  if ((i %% 100) == 0) cat("loop", i, "\n")
+Imat <- SVSS(X.o, y, M)
+# filter useful variables
+vars1 <- which(colSums(Imat) / M > 0.9) 
+# plot(1:M, cumsum(t(Imat[, 7])) / 1:M, type = "l", ylim = c(0, 1))
+X.o2 <- model.matrix(y ~ .^2, dat[, vars1])
+Imat2 <- SVSS(X.o2, y, M)
+vars2 <- colnames(X.o2)[which(colSums(Imat2) / M > 0.5) ]
+for (i in vars2) {
+  cat(i, ", ", sep = "")
 }
-# plot(1:M, cumsum(t(Imat[, 11])) / 1:M, type = "l", ylim = c(0, 1))
-save.image("1.RData")
+
+plot(101:M, cumsum(t(Imat[101:M, 3])) / 101:M, type = "l", ylim = c(0, 1))
