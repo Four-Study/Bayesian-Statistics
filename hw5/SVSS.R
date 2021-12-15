@@ -47,13 +47,32 @@ M <- 10000
 
 Imat <- SVSS(X.o, y, M)
 # filter useful variables
-vars1 <- which(colSums(Imat) / M > 0.9) 
+vars1 <- which(colSums(Imat) / M > 0.6) 
 # plot(1:M, cumsum(t(Imat[, 7])) / 1:M, type = "l", ylim = c(0, 1))
 X.o2 <- model.matrix(y ~ .^2, dat[, vars1])
 Imat2 <- SVSS(X.o2, y, M)
-vars2 <- colnames(X.o2)[which(colSums(Imat2) / M > 0.5) ]
+vars2 <- colnames(X.o2)[which(colSums(Imat2) / M > 0.9) ]
 for (i in vars2) {
   cat(i, ", ", sep = "")
 }
 
-plot(101:M, cumsum(t(Imat[101:M, 3])) / 101:M, type = "l", ylim = c(0, 1))
+
+pdf("in.pdf", width = 10, height = 5)
+par(mfrow = c(1, 2))
+plot(1:(M-100), cumsum(t(Imat[101:M, 1])) / 1:(M-100), 
+     type = "l", ylim = c(0, 1),
+     xlab = "Intercept", ylab = "Fraction")
+plot(1:(M-100), cumsum(t(Imat[101:M, 4])) / 1:(M-100), 
+     type = "l", ylim = c(0, 1),
+     xlab = "X3", ylab = "Fraction")
+dev.off()
+
+pdf("out.pdf", width = 10, height = 5)
+par(mfrow = c(1, 2))
+plot(1:(M-100), cumsum(t(Imat[101:M, 20])) / 1:(M-100), 
+     type = "l", ylim = c(0, 1),
+     xlab = "X19", ylab = "Fraction")
+plot(1:(M-100), cumsum(t(Imat[101:M, 50])) / 1:(M-100), 
+     type = "l", ylim = c(0, 1),
+     xlab = "X49", ylab = "Fraction")
+dev.off()

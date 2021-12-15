@@ -1,7 +1,7 @@
-######### Problem 2 #########
+######### Problem 2, 3, and 4 #########
 
 # Import the data and modify column names
-dat <- read.csv("Model2_5444.txt", skip = 2, header = FALSE)
+dat <- read.csv("Model3_5444.txt", skip = 2, header = FALSE)
 colnames(dat) <- c("y", paste0(rep("X", 50), 1:50))
 
 # augment the data set with interactions
@@ -21,12 +21,8 @@ for (name in rownames(la.coef)[as.numeric(la.coef != 0) == 1]) {
   cat(name, "+ ")
 }
 la.coef[as.numeric(la.coef != 0) == 1]
-which(as.numeric(la.coef != 0) == 1)
-lm.fit1 <- lm(y ~ X3 + X13 + X17 + X27 + X45 + X2:X36 + 
-                X7:X36 + X9:X14 + X9:X22 + X12:X44 + 
-                X14:X19 + X15:X17 + X16:X35 + X18:X24 + 
-                X20:X26 + X22:X46 + X23:X26 + X27:X44 + 
-                X29:X32, data = dat.aug)
+vars <- which(as.numeric(la.coef != 0) == 1)
+lm.fit1 <- lm(y ~ ., data = dat.aug[, vars])
 summary(lm.fit1)
 coef.la <- lm.fit1$coefficients
 library(tidyverse)
@@ -38,7 +34,8 @@ eqn.la <- paste("y =", paste(round(coef.la[1],3),
   gsub(pattern = ' \\* ', replacement = '*') %>%
   gsub(pattern = '\\+ -', replacement = '- ') %>%
   gsub(pattern = 'X([0-9]{1,2})', replacement = paste0("X_{", "\\1", "}")) %>%
-  gsub(pattern = "[*:]", replacement = "")
+  gsub(pattern = "\\*", replacement = "") %>%
+  gsub(pattern = "\\.X", replacement = "X")
 print(eqn.la)
 
 # AIC
@@ -75,7 +72,7 @@ eqn.BIC <- paste("y =", paste(round(coef.BIC[1],3),
   gsub(pattern = "\\.X", replacement = "X")
 print(eqn.BIC)
 
-# SVSS
+# SSVS
 
 # initialization
 p <- ncol(X)
